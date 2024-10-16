@@ -1,33 +1,51 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useRef, useState, useCallback, useEffect } from 'react'
+import Webcam from 'react-webcam'
 import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
 
+  const [isCapturing, setIsCapturing] = useState(false)
+  const [captureInterval, setCaptureInterval] = useState(1)
+  const captureIntervalRef = useRef(null)
+
+  const startCapture = useCallback(() => {
+    setIsCapturing(true);
+    captureIntervalRef.current = setInterval(capture, captureInterval * 1000);
+  }, [])
+
+  const stopCapture = useCallback(() => {
+    clearInterval(captureIntervalRef.current);
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (captureIntervalRef.current) {
+        clearInterval(captureIntervalRef.current);
+      }
+    }
+  }, [])
+
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className='App'>
+        <h1>PORG - Processing Of Real-time Gestures</h1>
+        <h3>the most beautiful website u have ever seen</h3>
+        <div>
+          <Webcam
+            audio={false}
+            screenshotFormat='image/jpeg'
+            style={{ width: '512px', height: 'auto' }}
+          />
+        </div>
+        <div>
+          {isCapturing ? (
+            <button onClick={stopCapture}>Stop Capture</button>
+          ) : (
+            <button onClick={startCapture}>Start Capture</button>
+          )}
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
