@@ -7,12 +7,23 @@ function App() {
 
   const [isCapturing, setIsCapturing] = useState(false)
   const [captureInterval, setCaptureInterval] = useState(1)
+  const [processedFrames, setProcessedFrames] = useState(0)
   const captureIntervalRef = useRef(null)
+  const webcamRef = useRef(null)
+
+  const capture = useCallback(() => {
+    // get image from webcam
+    const imageSrc = webcamRef.current.getScreenshot();
+
+    // do preprocessing
+    const processedFrame = doPreProcessing(imageSrc);
+
+  }, [webcamRef])
 
   const startCapture = useCallback(() => {
     setIsCapturing(true);
     captureIntervalRef.current = setInterval(capture, captureInterval * 1000);
-  }, [])
+  }, [capture, captureInterval])
 
   const stopCapture = useCallback(() => {
     clearInterval(captureIntervalRef.current);
@@ -26,6 +37,10 @@ function App() {
     }
   }, [])
 
+  const handleIntervalChange = (e) => {
+    setCaptureInterval(Number(e.target.value));
+  }
+
   return (
     <>
       <div className='App'>
@@ -34,6 +49,7 @@ function App() {
         <div>
           <Webcam
             audio={false}
+            ref={webcamRef}
             screenshotFormat='image/jpeg'
             style={{ width: '512px', height: 'auto' }}
           />
