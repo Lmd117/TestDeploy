@@ -8,12 +8,37 @@ function App() {
   const [isCapturing, setIsCapturing] = useState(false)
   const [captureInterval, setCaptureInterval] = useState(1)
   const [processedFrames, setProcessedFrames] = useState(0)
-  const captureIntervalRef = useRef(null)
   const webcamRef = useRef(null)
+  const captureIntervalRef = useRef(null)
+
+  const sendFrame = async (imageSrc) => {
+    try {
+      const response = await fetch('/api/process-frame', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ frame: imageSrc }),
+      });
+      
+      // screenshot posted successfully
+      if (response.ok) {
+        setProcessedFrames(prev => prev + 1);
+      } 
+      // screenshot post failed
+      else {
+        console.error('Failed to process frame');
+      }
+    } catch (error) {
+      console.error('Error sending frame to backend:', error);
+    }
+  };
+  
 
   const capture = useCallback(() => {
     // get image from webcam
     const imageSrc = webcamRef.current.getScreenshot();
+    sendFrame(imageSrc)
 
     // do preprocessing
     const processedFrame = doPreProcessing(imageSrc);
@@ -26,6 +51,7 @@ function App() {
   }, [capture, captureInterval])
 
   const stopCapture = useCallback(() => {
+    setIsCapturing(false)
     clearInterval(captureIntervalRef.current);
   }, [])
 
@@ -55,12 +81,26 @@ function App() {
           />
         </div>
         <div>
+          <label htmlFor="captureInterval">Capture Interval (seconds): </label>
+          <input
+            type="number"
+            id="captureInterval"
+            value={captureInterval}
+            onChange={handleIntervalChange}
+            min="0.1"
+            step="0.1"
+            />
+        </div>
+        <div>
           {isCapturing ? (
             <button onClick={stopCapture}>Stop Capture</button>
           ) : (
             <button onClick={startCapture}>Start Capture</button>
           )}
         </div>
+        <div>
+          <p>Frames processed: {processedFrames}</p>
+      </div>
       </div>
     </>
   )
