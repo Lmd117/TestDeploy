@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import Webcam from 'react-webcam'
+import doPreProcessing from './preProcessing'
 import './App.css'
 
 function App() {
@@ -43,6 +44,8 @@ function App() {
     // do preprocessing
     const processedFrame = doPreProcessing(imageSrc);
 
+    sendFrame(processedFrame)
+
   }, [webcamRef])
 
   const startCapture = useCallback(() => {
@@ -79,6 +82,9 @@ function App() {
             screenshotFormat='image/jpeg'
             style={{ width: '512px', height: 'auto' }}
           />
+        </div>
+        <div>
+          <canvas id="preProcessing_preview" width="256" height="auto"></canvas>
         </div>
         <div>
           <label htmlFor="captureInterval">Capture Interval (seconds): </label>
